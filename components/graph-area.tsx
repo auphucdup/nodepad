@@ -198,6 +198,7 @@ export function GraphArea({
   const [transform,  setTransform]  = React.useState({ x: 0, y: 0, k: 1 })
 
   const isPanning   = React.useRef(false)
+  const didPan      = React.useRef(false)
   const panStart    = React.useRef({ mx: 0, my: 0, tx: 0, ty: 0 })
   const draggedNode = React.useRef<SimNode | null>(null)
 
@@ -295,6 +296,13 @@ export function GraphArea({
     sim.alpha(0.12).restart()
   }, [dims]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Escape key to clear selection ────────────────────────────────────────
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSelectedId(null) }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
+
   // ── Zoom ─────────────────────────────────────────────────────────────────
   const handleWheel = React.useCallback((e: React.WheelEvent) => {
     e.preventDefault()
@@ -312,6 +320,7 @@ export function GraphArea({
   const handleSvgMouseDown = React.useCallback((e: React.MouseEvent<SVGSVGElement>) => {
     if ((e.target as Element).closest(".graph-node")) return
     isPanning.current = true
+    didPan.current    = false
     panStart.current  = { mx: e.clientX, my: e.clientY, tx: transform.x, ty: transform.y }
   }, [transform])
 
@@ -320,10 +329,12 @@ export function GraphArea({
       const rect = svgRef.current!.getBoundingClientRect()
       draggedNode.current.fx = (e.clientX - rect.left  - transform.x) / transform.k
       draggedNode.current.fy = (e.clientY - rect.top   - transform.y) / transform.k
-      simRef.current.alphaTarget(0.3).restart()
+      // Kick simulation on first actual movement (not on mere mousedown)
+      if (simRef.current.alpha() < 0.1) simRef.current.alphaTarget(0.3).restart()
       return
     }
     if (!isPanning.current) return
+    didPan.current = true
     setTransform(t => ({
       ...t,
       x: panStart.current.tx + (e.clientX - panStart.current.mx),
@@ -341,8 +352,10 @@ export function GraphArea({
     }
   }, [])
 
-  // ── Hover / index-highlight: connected set ───────────────────────────────
-  const focalId = hoveredId ?? highlightedBlockId ?? null
+  // ── Hover / index-highlight / selection: connected set ───────────────────
+  // selectedId is included so selecting a node keeps its connections lit even
+  // after the cursor moves away; hover and index-highlight take priority.
+  const focalId = hoveredId ?? selectedId ?? highlightedBlockId ?? null
 
   const connectedToFocal = React.useMemo(() => {
     if (!focalId) return null
@@ -401,7 +414,7 @@ export function GraphArea({
           onMouseMove={handleSvgMouseMove}
           onMouseUp={handleSvgMouseUp}
           onMouseLeave={handleSvgMouseUp}
-          onClick={() => setSelectedId(null)}
+          onClick={() => { if (!didPan.current) setSelectedId(null) }}
         >
           <defs>
             <filter id="glow-synth" x="-60%" y="-60%" width="220%" height="220%">
@@ -515,7 +528,6 @@ export function GraphArea({
                     onMouseDown={e => {
                       e.stopPropagation()
                       draggedNode.current = node
-                      simRef.current?.alphaTarget(0.3).restart()
                     }}
                     onClick={e => {
                       e.stopPropagation()

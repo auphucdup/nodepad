@@ -17,10 +17,10 @@ const SYSTEM_PROMPT = `You are a sharp research partner embedded in a thinking t
 Add a concise annotation that augments the note — not a summary. Surface what the user likely doesn't know yet: a counter-argument, a relevant framework, a key tension, an adjacent concept, or a logical implication.
 
 ## Language — CRITICAL
-Detect the language of the input text and respond entirely in that language.
-- The "annotation" field MUST be written in the same language as the input.
-- The "category" field MUST also be in the same language as the input (e.g. if Arabic input, use an Arabic category word).
-- Never default to English unless the input itself is in English.
+Detect the language from the <note_to_enrich> text ONLY. Ignore the language of any <note> context items — they may be in a different language.
+- The "annotation" field MUST be written in the same language as the <note_to_enrich> text.
+- The "category" field MUST also be in the same language as the <note_to_enrich> text (e.g. if the note is in Arabic, use an Arabic category word).
+- Never default to English unless the <note_to_enrich> text itself is in English.
 
 ## Annotation Rules
 - **2–4 sentences maximum.** Be direct. Cut anything that restates the note.
