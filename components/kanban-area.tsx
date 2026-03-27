@@ -124,7 +124,7 @@ export function KanbanArea({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col w-80 shrink-0 h-full max-h-full pb-2"
+              className="flex flex-col w-96 shrink-0 h-full max-h-full pb-2"
             >
               {/* Column Header */}
               <div className="flex items-center justify-between px-2 py-1 border-b border-border/40">

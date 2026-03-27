@@ -93,7 +93,11 @@ export function TilingArea({
   const chunkedPages = useMemo(() => {
     const gridBlocks = blocks
       .filter((b: TextBlock) => b.contentType !== "task")
-      .sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0))
+      .sort((a, b) => {
+        const pinDiff = (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0)
+        if (pinDiff !== 0) return pinDiff
+        return a.timestamp - b.timestamp // stable: older blocks first within same pin state
+      })
     if (gridBlocks.length === 0) return []
     const chunks: TextBlock[][] = []
     for (let i = 0; i < gridBlocks.length; i += PAGE_SIZE) {

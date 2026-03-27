@@ -1,5 +1,8 @@
 import type { ContentType } from "./content-types"
 
+// Escape characters that would break markdown table cells
+const mdCell = (s: string) => s.replace(/\|/g, "\\|").replace(/\n/g, " ")
+
 export interface ExportBlock {
   id: string
   text: string
@@ -175,7 +178,7 @@ export function exportToMarkdown(projectName: string, blocks: ExportBlock[]): st
       lines.push(`| Claim | Category | Confidence | AI Annotation |`)
       lines.push(`|-------|----------|------------|---------------|`)
       for (const block of group) {
-        const cat   = block.category ? `\`${block.category}\`` : "—"
+        const cat   = block.category ? `\`${mdCell(block.category)}\`` : "—"
         const conf  = block.confidence != null
           ? `\`${confidenceBar(block.confidence)}\``
           : "—"

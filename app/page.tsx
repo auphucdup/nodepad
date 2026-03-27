@@ -66,6 +66,11 @@ export default function Page() {
     undoToastTimer.current = setTimeout(() => setUndoToast(null), 2200)
   }, [])
 
+  // Clean up undo toast timer on unmount
+  useEffect(() => () => {
+    if (undoToastTimer.current) clearTimeout(undoToastTimer.current)
+  }, [])
+
   const undo = useCallback(() => {
     const stack = blockHistoryRef.current[activeProjectId]
     if (!stack || stack.length === 0) {
@@ -89,6 +94,17 @@ export default function Page() {
 
   const updateActiveProject = useCallback((updater: (p: Project) => Project) => {
     setProjects(prev => prev.map(p => p.id === activeProjectId ? updater(p) : p))
+  }, [activeProjectId])
+
+  // Clear debounce timers for the previous project when switching
+  const prevActiveProjectId = useRef<string | null>(null)
+  useEffect(() => {
+    const prev = prevActiveProjectId.current
+    if (prev && prev !== activeProjectId && debounceTimers.current[prev]) {
+      Object.values(debounceTimers.current[prev]).forEach(clearTimeout)
+      delete debounceTimers.current[prev]
+    }
+    prevActiveProjectId.current = activeProjectId
   }, [activeProjectId])
 
   // 1. Persistence: Initial Load & Migration
@@ -376,6 +392,11 @@ export default function Page() {
                   .map((idx) => context[idx]?.id)
                   .filter(Boolean) as string[]
               : []
+
+            // Clamp confidence to 0–100 regardless of what the model returns
+            if (data.confidence != null) {
+              data.confidence = Math.min(100, Math.max(0, Math.round(data.confidence)))
+            }
 
             setProjects((current: Project[]) => {
               const mergeTargetIdx = data.mergeWithIndex
