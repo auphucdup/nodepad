@@ -45,9 +45,9 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cloud.umami.is",
               "style-src 'self' 'unsafe-inline'",
-              "connect-src 'self' https://openrouter.ai",
+              "connect-src 'self' https://openrouter.ai https://cloud.umami.is",
               "img-src 'self' data: blob:",
               "font-src 'self' data:",
               "frame-ancestors 'none'",
