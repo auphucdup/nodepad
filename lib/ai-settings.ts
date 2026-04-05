@@ -33,6 +33,20 @@ export const AI_MODELS: AIModel[] = [
     supportsGrounding: true,
   },
   {
+    id: "minimax/minimax-m2.7",
+    label: "MiniMax M2.7",
+    shortLabel: "M2.7",
+    description: "Fast frontier reasoning, web grounding available",
+    supportsGrounding: true,
+  },
+  {
+    id: "minimax/minimax-m2.5",
+    label: "MiniMax M2.5",
+    shortLabel: "M2.5",
+    description: "Strong general productivity model, web grounding available",
+    supportsGrounding: true,
+  },
+  {
     id: "deepseek/deepseek-chat",
     label: "DeepSeek V3",
     shortLabel: "DeepSeek",

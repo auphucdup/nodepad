@@ -41,6 +41,31 @@ Open [localhost:3000](http://localhost:3000).
 
 **Enable web grounding** (optional): toggle "Web grounding" in Settings to let the AI cite real sources for claims, questions, and references. Works with models that support the `:online` suffix.
 
+## Docker
+
+Minimal local deployment:
+
+```bash
+docker compose up -d --build
+```
+
+The app will listen on port `3000` on the Docker host.
+
+Set a password before deploying by changing `NODEPAD_AUTH_PASSWORD` in `compose.yaml`. If the variable is left empty, the auth gate is disabled.
+
+For a Cloudflare Tunnel ingress rule, point the tunnel at:
+
+```txt
+http://localhost:3000
+```
+
+Caveats:
+
+- nodepad does not use a database; user data lives in each browser's `localStorage`
+- the OpenRouter API key is entered in the UI and stored in the browser, not in the container
+- if you destroy the browser profile or switch devices, that local data does not follow you automatically
+- the built-in password gate is intentionally simple and is best used as a lightweight front door behind Cloudflare Tunnel or Cloudflare Access
+
 ---
 
 ## Models

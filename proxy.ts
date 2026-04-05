@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { authCookieName, authEnabled, isAuthenticated } from "@/lib/auth"
 
 // ── Sliding-window rate limiter ───────────────────────────────────────────────
 // Guards /api/fetch-url from being hammered as a public CORS proxy.
@@ -17,8 +18,34 @@ function isRateLimited(ip: string, path: string): boolean {
   return false
 }
 
-export function proxy(req: NextRequest) {
+function isPublicPath(pathname: string) {
+  return (
+    pathname === "/login" ||
+    pathname.startsWith("/auth/login") ||
+    pathname.startsWith("/auth/logout") ||
+    pathname.startsWith("/_next/") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/icon.svg" ||
+    pathname === "/apple-icon.png" ||
+    pathname === "/site.webmanifest" ||
+    pathname === "/nodepad.jpg"
+  )
+}
+
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
+
+  if (!isPublicPath(pathname) && authEnabled()) {
+    const authenticated = await isAuthenticated(req.cookies.get(authCookieName())?.value)
+    if (!authenticated) {
+      const loginUrl = new URL("/login", req.url)
+      const nextPath = `${pathname}${req.nextUrl.search}`
+      if (nextPath.startsWith("/")) {
+        loginUrl.searchParams.set("next", nextPath)
+      }
+      return NextResponse.redirect(loginUrl)
+    }
+  }
 
   if (!pathname.startsWith("/api/fetch-url")) {
     return NextResponse.next()
@@ -62,5 +89,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/fetch-url"],
+  matcher: ["/((?!_next/static|_next/image).*)"],
 }

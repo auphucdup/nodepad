@@ -1,0 +1,11 @@
+services:
+  nodepad:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nodepad
+    restart: unless-stopped
+    environment:
+      NODEPAD_AUTH_PASSWORD: There@l1!
+    ports:
+      - "3000:3000"
